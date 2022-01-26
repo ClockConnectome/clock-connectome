@@ -1,4 +1,4 @@
-def clock_neuron_connections(clock_df, direction):
+def clock_neuron_connections(clock_df, direction, min_weight):
     """
     Gets input/output connections of clock neurons as well as connections between clock neurons.
 
@@ -8,18 +8,19 @@ def clock_neuron_connections(clock_df, direction):
         'in' for inputs to clock neurons from anything else, 
         'out' for outputs from clock neurons to anything else,
         'intra_clock' for connections between clock neurons.
+    min_weight = minimum weight in one direction required between two neurons to be included
     """
     from neuprint import fetch_adjacencies
     
     if direction == 'out':
         # get outputs from clock neurons to anything else
-        neuron_df, conn_df = fetch_adjacencies(clock_df['bodyId'], None, min_total_weight=1)
+        neuron_df, conn_df = fetch_adjacencies(clock_df['bodyId'], None, min_total_weight=min_weight)
     if direction == 'in':
         # get inputs to clock neurons from anything else
-        neuron_df, conn_df = fetch_adjacencies(None, clock_df['bodyId'], min_total_weight=1)
+        neuron_df, conn_df = fetch_adjacencies(None, clock_df['bodyId'], min_total_weight=min_weight)
     if direction == 'intra_clock':
         #getting the connections between clock neurons
-        neuron_df_clock, conn_df_clock = fetch_adjacencies(clock_df['bodyId'], clock_df['bodyId'], min_total_weight=1)
+        neuron_df_clock, conn_df_clock = fetch_adjacencies(clock_df['bodyId'], clock_df['bodyId'], min_total_weight=min_weight)
     
     # consolidate since we don't care about separating connections between 2 neurons that happen in different ROIs.
     conns_df = conn_df.groupby(['bodyId_pre', 'bodyId_post'], as_index=False)['weight'].sum()
