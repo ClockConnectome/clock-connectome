@@ -14,6 +14,10 @@ def getClock(l_lnv=False):
                     '5th s-LNv_R_1', 'LNd_R_1', 'LNd_R_2', 'LNd_R_3', 'LPN_R_1', 'LPN_R_2', 'LPN_R_3', 'LPN_R_4',
                     'DN1a_R_1', 'DN1a_R_2', 'DN1pA_R_1', 'DN1pA_R_2', 'DN1pA_R_3', 'DN1pA_R_4', 'DN1pA_R_5',
                     'DN1pB_R_1', 'DN1pB_R_2'],
+       'labels': ['sLNv1', 'sLNv2', 'sLNv3', 'sLNv4', 'LNd4', 'LNd5', 'LNd6',
+                    '5th sLNv', 'LNd1', 'LNd2', 'LNd3', 'LPN1', 'LPN2', 'LPN3', 'LPN4',
+                    'DN1a1', 'DN1a2', 'DN1pA1', 'DN1pA2', 'DN1pA3', 'DN1pA4', 'DN1pA5',
+                    'DN1pB1', 'DN1pB2'],
        'phase': ['morning', 'morning', 'morning', 'morning', 'evening', 'evening', 'evening', 'evening', 'evening', 
                  'evening', 'evening', '', '', '', '', '', '', '', '', '', '', '', '', ''],
        'subphase': ['M', 'M', 'M', 'M', 'E1', 'E1', 'E2', 'E2', 'E3', 
@@ -26,8 +30,9 @@ def getClock(l_lnv=False):
            'bodyId': (1884625521,2065745704, 5813001741, 5813026773),
            'type': tuple(('l-LNv', 'l-LNv', 'l-LNv', 'l-LNv')),
            'seqInstance': ['l-LNv_R_1', 'l-LNv_R_2', 'l-LNv_R_3', 'l-LNv_R_4'],
+           'labels': ['lLNv1', 'lLNv2', 'lLNv3', 'lLNv4'],
            'phase': ['', '', '', ''],
-           'phase_specific': ['', '', '', '']}
+           'subphase': ['', '', '', '']}
         
         l_lnv_df = pd.DataFrame.from_dict(l_lnv_dictionary)
         clock_df = clock_df.append(l_lnv_df, ignore_index=True)

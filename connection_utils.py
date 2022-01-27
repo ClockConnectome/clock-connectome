@@ -1,4 +1,4 @@
-def clock_neuron_connections(clock_df, direction, min_weight):
+def clock_neuron_connections(clock_df, direction, min_weight=1):
     """
     Gets input/output connections of clock neurons as well as connections between clock neurons.
 
@@ -20,7 +20,7 @@ def clock_neuron_connections(clock_df, direction, min_weight):
         neuron_df, conn_df = fetch_adjacencies(None, clock_df['bodyId'], min_total_weight=min_weight)
     if direction == 'intra_clock':
         #getting the connections between clock neurons
-        neuron_df_clock, conn_df_clock = fetch_adjacencies(clock_df['bodyId'], clock_df['bodyId'], min_total_weight=min_weight)
+        neuron_df, conn_df = fetch_adjacencies(clock_df['bodyId'], clock_df['bodyId'], min_total_weight=min_weight)
     
     # consolidate since we don't care about separating connections between 2 neurons that happen in different ROIs.
     conns_df = conn_df.groupby(['bodyId_pre', 'bodyId_post'], as_index=False)['weight'].sum()
@@ -48,7 +48,7 @@ def synapse_count(conns_df, direction, intra_clock=False):
         clock = 'clock_'
 
     syns_df = conns_df.groupby([column_to_group_on], as_index=False)['weight'].sum()
-    syns_df = syns_df.rename(columns={"weight": f"num_{clock}{direction}_syns",[column_to_group_on]:"bodyId"})
+    syns_df = syns_df.rename(columns={"weight": f"num_{clock}{direction}_syns",column_to_group_on:"bodyId"})
     
     return syns_df
 
@@ -74,7 +74,7 @@ def synaptic_partner_numbers(conns_df, direction, intra_clock=False):
     if intra_clock:
         clock = 'clock_'
 
-    partners_df = clock_conns_df[column_to_group_on].value_counts().to_frame().reset_index()
+    partners_df = conns_df[column_to_group_on].value_counts().to_frame().reset_index()
     partners_df = partners_df.rename(columns={"index":"bodyId", column_to_group_on:f"num_{clock}{pre_or_post}syn_partners"})
 
     return partners_df
