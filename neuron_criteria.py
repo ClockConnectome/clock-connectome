@@ -1,6 +1,9 @@
 def getClock(l_lnv=False):
     """
     Manually generates table of the clock neurons with or without the l-lnvs
+
+    :param l_lnv: default false. If set to True, includes information about l-lnv neurons.
+    :return:
     """
     import pandas as pd
 
@@ -40,6 +43,9 @@ def getClock(l_lnv=False):
     return clock_df
 
 def bodyIds_by_type():
+    """
+    Returns a dictionary of neuron type names mapped to lists of bodyIds.
+    """
     ids_by_type = {'s-LNv':[1664980698, 1975347348, 2007068523, 2068801704],
     '5th s-LNv':511051477,
     'LNd':[296544364, 448260940, 5813021192, 5813056917, 5813064789, 5813069648],
@@ -51,7 +57,10 @@ def bodyIds_by_type():
     return ids_by_type
 
 def define_neuron_criteria():
-    # define the criteria for the 23 neurons in "The Big One"
+    """
+    Defines the criteria for the 23 neurons in "The Big One" as lists
+    Casts the lists into the NeuronCriteria function from neuprint.
+    """
     from neuprint import NeuronCriteria as NC
 
     sLNv_ID = [1664980698, 1975347348, 2007068523, 2068801704]
