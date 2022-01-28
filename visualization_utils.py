@@ -7,7 +7,7 @@ def supervenn_comps(conn_df, clock_df, group, direction, bodyIds = None, weighte
 
     :param conn_df: Any connections dataframe that includes all relevant connections, weight cutoff already done
     :param clock_df: Clock dataframe
-    :param group: Name of clock group featured in figure
+    :param group: Name of clock group featured in figure OR some other identifying name for labels
     :param direction: Out for connections of clock neurons to other neurons, in for connections of clock neurons from other neurons
     :param bodyIds: (optional) provide bodyIds of neurons in figure
     :param weighted: Whether generated figure visually represent weights of each connection
@@ -36,7 +36,7 @@ def supervenn_comps(conn_df, clock_df, group, direction, bodyIds = None, weighte
             sets.append(set(conn_df.loc[conn_df['bodyId_pre'] == s, 'bodyId_post']))
 
     fig, ax = plt.subplots(figsize=(10, 8))
-    labels = clock_df.loc[clock_df['type'] == group, 'seqInstance'].reset_index()['seqInstance']
+    labels = clock_df.loc[clock_df['bodyId'].isin(bodyIds), 'seqInstance'].reset_index()['seqInstance']
     supervenn(sets, labels, side_plots='right', chunks_ordering='minimize gaps')
 
     if direction == "out":
@@ -48,3 +48,6 @@ def supervenn_comps(conn_df, clock_df, group, direction, bodyIds = None, weighte
     plt.title('overlap of ' + group + ' targets')
     fig.savefig('vectorized_' + group + '_targets.png')
     fig.savefig('vectorized_' + group + '_targets.svg', format='svg')
+
+def jaccard_vis(bodyIds):
+    pass
