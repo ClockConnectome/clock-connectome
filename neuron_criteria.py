@@ -42,6 +42,15 @@ def getClock(l_lnv=False):
 
     return clock_df
 
+""" GJG - I would like the bodyIds_by_type and define_neuron_criteria functions to be removed or revised. 
+Ideally, the getClock function would return the master object that contains identifying information for the clock neurons.
+Any other functions that return clock IDs or clock labels, etc, should call getClock. This will prevent conflicting information
+from being returned. For example, the bodyIds from bodyIds_by_type might return LNd IDs in a different ordering from what would be 
+returned with getClock. Or if the hemibrain is updated with new clock neurons, then we should only have to update getClock for
+everything else to be up to date. If the bodyIds_by_type and define_neuron_criteria functions are needed, please change them so that 
+they call getClock to obtain identifying information for the clock neurons.
+"""
+
 def bodyIds_by_type():
     """
     Returns a dictionary of neuron type names mapped to lists of bodyIds.
