@@ -8,11 +8,11 @@ def getClock(l_lnv=False):
     import pandas as pd
 
     clock_dictionary = {
-       'bodyId': (2068801704, 1664980698, 2007068523, 1975347348, 5813056917, 5813021192, 5813069648, 511051477,
+       'bodyId': [2068801704, 1664980698, 2007068523, 1975347348, 5813056917, 5813021192, 5813069648, 511051477,
                   296544364, 448260940, 5813064789, 356818551, 480029788, 450034902, 546977514, 264083994, 5813022274,
-                  5813010153, 324846570, 325529237, 387944118, 387166379, 386834269, 5813071319),
-       'type': tuple(('s-LNv', 's-LNv', 's-LNv', 's-LNv', 'LNd', 'LNd', 'LNd', '5th s-LNv', 'LNd', 'LNd', 'LNd',
-                'LPN', 'LPN', 'LPN', 'LPN', 'DN1a', 'DN1a', 'DN1pA', 'DN1pA', 'DN1pA', 'DN1pA', 'DN1pA', 'DN1pB', 'DN1pB')),
+                  5813010153, 324846570, 325529237, 387944118, 387166379, 386834269, 5813071319],
+       'type': ['s-LNv', 's-LNv', 's-LNv', 's-LNv', 'LNd', 'LNd', 'LNd', '5th s-LNv', 'LNd', 'LNd', 'LNd',
+                'LPN', 'LPN', 'LPN', 'LPN', 'DN1a', 'DN1a', 'DN1pA', 'DN1pA', 'DN1pA', 'DN1pA', 'DN1pA', 'DN1pB', 'DN1pB'],
        'seqInstance': ['s-LNv_R_1', 's-LNv_R_2', 's-LNv_R_3', 's-LNv_R_4', 'LNd_R_4', 'LNd_R_5', 'LNd_R_6',
                     '5th s-LNv_R_1', 'LNd_R_1', 'LNd_R_2', 'LNd_R_3', 'LPN_R_1', 'LPN_R_2', 'LPN_R_3', 'LPN_R_4',
                     'DN1a_R_1', 'DN1a_R_2', 'DN1pA_R_1', 'DN1pA_R_2', 'DN1pA_R_3', 'DN1pA_R_4', 'DN1pA_R_5',
@@ -42,43 +42,18 @@ def getClock(l_lnv=False):
 
     return clock_df
 
-""" GJG - I would like the bodyIds_by_type and define_neuron_criteria functions to be removed or revised. 
-Ideally, the getClock function would return the master object that contains identifying information for the clock neurons.
-Any other functions that return clock IDs or clock labels, etc, should call getClock. This will prevent conflicting information
-from being returned. For example, the bodyIds from bodyIds_by_type might return LNd IDs in a different ordering from what would be 
-returned with getClock. Or if the hemibrain is updated with new clock neurons, then we should only have to update getClock for
-everything else to be up to date. If the bodyIds_by_type and define_neuron_criteria functions are needed, please change them so that 
-they call getClock to obtain identifying information for the clock neurons.
-"""
-
-def bodyIds_by_type():
+def bodyIds_by_type(clock_df):
     """
-    Returns a dictionary of neuron type names mapped to lists of bodyIds.
+    Uses data from clock_df to return a dictionary mapping neurons to lists of bodyIds.
+    :param clock_df: clock information dataframe
+    :return:
     """
-    ids_by_type = {'s-LNv':[1664980698, 1975347348, 2007068523, 2068801704],
-    '5th s-LNv':511051477,
-    'LNd':[296544364, 448260940, 5813021192, 5813056917, 5813064789, 5813069648],
-    'LPN':[356818551, 450034902, 480029788, 546977514],
-    'DN1a':[264083994, 5813022274],
-    'DN1pA':[324846570, 325529237, 387166379, 387944118, 5813010153],
-    'DN1pB':[386834269, 5813071319],
-    'l-LNv': [1884625521,2065745704, 5813001741, 5813026773]}
-    return ids_by_type
+    from collections import defaultdict
 
-def define_neuron_criteria():
-    """
-    Defines the criteria for the 23 neurons in "The Big One" as lists
-    Casts the lists into the NeuronCriteria function from neuprint.
-    """
-    from neuprint import NeuronCriteria as NC
-
-    sLNv_ID = [1664980698, 1975347348, 2007068523, 2068801704]
-    sLNv_5_ID = [511051477]
-    LNd_ID = [296544364, 448260940, 5813021192, 5813056917, 5813064789, 5813069648]
-    LPN_ID = [356818551, 450034902, 480029788, 546977514]
-    DN1a_ID = [264083994, 5813022274]
-    DN1pA_ID = [324846570, 325529237, 387166379, 387944118, 5813010153]
-    DN1pB_ID = [386834269, 5813071319]
-
-    criteria = NC(bodyId=tuple(sLNv_5_ID + sLNv_ID + LNd_ID + LPN_ID + DN1a_ID + DN1pA_ID + DN1pB_ID))
-    return criteria
+    Ids_by_type = defaultdict(list)
+    for t in clock_df.type.unique():
+        one_type = clock_df[clock_df['type']==t]
+        bodyIds = one_type['bodyId']
+        bodyIds = bodyIds.values.tolist()
+        Ids_by_type[t].append(bodyIds)
+    return Ids_by_type
