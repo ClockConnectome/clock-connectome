@@ -50,10 +50,10 @@ def bodyIds_by_type(clock_df):
     """
     from collections import defaultdict
 
-    Ids_by_type = defaultdict(list)
+    Ids_by_type = defaultdict()
     for t in clock_df.type.unique():
         one_type = clock_df[clock_df['type']==t]
         bodyIds = one_type['bodyId']
         bodyIds = bodyIds.values.tolist()
-        Ids_by_type[t].append(bodyIds)
+        Ids_by_type[t] = bodyIds
     return Ids_by_type
