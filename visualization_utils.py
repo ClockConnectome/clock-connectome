@@ -37,7 +37,7 @@ def supervenn_comps(conn_df, clock_df, group, direction, bodyIds = None, weighte
             sets.append(set([item for sublist in list_s for item in sublist]))
     else:
         for s in bodyIds:
-            sets.append(set(conn_df.loc[conn_df['bodyId_pre'] == s, 'bodyId_post']))
+            sets.append(set(conn_df.loc[conn_df[clock_col] == s, partner_col]))
 
     fig, ax = plt.subplots(figsize=(10, 8))
     labels = clock_df.loc[clock_df['bodyId'].isin(bodyIds), 'labels'].reset_index()['labels']
