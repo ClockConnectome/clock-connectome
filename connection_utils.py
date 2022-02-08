@@ -10,7 +10,7 @@ def clock_neuron_connections(clock_df, direction, min_weight=1):
     :param min_weight: minimum weight in one direction required between two neurons to be included
     :return:
     """
-    from neuprint import fetch_adjacencies
+    from neuprint import fetch_adjacencies, merge_neuron_properties
     
     if direction == 'out':
         # get outputs from clock neurons to anything else
@@ -23,8 +23,15 @@ def clock_neuron_connections(clock_df, direction, min_weight=1):
         neuron_df, conn_df = fetch_adjacencies(clock_df['bodyId'], clock_df['bodyId'], min_total_weight=min_weight)
     
     # consolidate since we don't care about separating connections between 2 neurons that happen in different ROIs.
-    conns_df = conn_df.groupby(['bodyId_pre', 'bodyId_post'], as_index=False)['weight'].sum()
-    return conns_df
+    conn_df = conn_df.groupby(['bodyId_pre', 'bodyId_post'], as_index=False)['weight'].sum()
+
+    # merge on instance information
+    neuron_df = neuron_df.merge(clock_df[['bodyId', 'labels']], how='left')
+    neuron_df.loc[neuron_df['labels'].isnull(), 'labels'] = neuron_df['type']
+    neuron_df['instance'] = neuron_df['labels']
+    conn_df = merge_neuron_properties(neuron_df, conn_df, properties=['instance'])
+
+    return conn_df
 
 def synapse_count(conns_df, direction, intra_clock=False):
     """
