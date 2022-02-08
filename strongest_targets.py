@@ -12,7 +12,7 @@ def get_strong_shared_targs(IDs, shared_num):
       
     test = test.groupby(['bodyId_post'], as_index=False)['weight','shared'].sum()
     test = test.sort_values(by=['weight'], ascending=False)
-    test = test.loc[test['shared']==shared_num]
+    test = test.loc[test['shared'] >= shared_num]
 
     return test
 
