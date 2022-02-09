@@ -1,20 +1,29 @@
-def get_strong_shared_targs(IDs, shared_num):
+def strong_shared_connections(IDs, direction, shared_num):
     """
     Gets strong shared targets (bodyID and total shared weight)
     :param IDs: candidate IDs
-    :shared_num: (int) shared target number to look at
+    :param direction: (string) specified connection direction to run:
+        'in' for inputs to clock neurons from anything else, 
+        'out' for outputs from clock neurons to anything else.
+    :param shared_num: (int) shared target number to look at
     :return:
     """
     from neuprint import fetch_simple_connections
 
-    test = fetch_simple_connections(IDs, None, min_weight=10)
-    test['shared'] = 1
-      
-    test = test.groupby(['bodyId_post'], as_index=False)['weight','shared'].sum()
+    if direction == 'out':
+        test = fetch_simple_connections(IDs, None, min_weight=10)
+        test['shared'] = 1
+        test = test.groupby(['bodyId_post','instance_post'], as_index=False)['weight','shared'].sum()
+    if direction == 'in':
+        test = fetch_simple_connections(None, IDs, min_weight=10)
+        test['shared'] = 1
+        test = test.groupby(['bodyId_pre','instance_pre'], as_index=False)['weight','shared'].sum()
+
     test = test.sort_values(by=['weight'], ascending=False)
     test = test.loc[test['shared'] >= shared_num]
 
     return test
+
 
 def get_input_output_conns(IDs, strength, direction):
     """
