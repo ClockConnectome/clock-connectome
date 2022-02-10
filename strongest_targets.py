@@ -13,10 +13,12 @@ def strong_shared_connections(IDs, direction, shared_num):
     if direction == 'out':
         test = fetch_simple_connections(IDs, None, min_weight=10)
         test['shared'] = 1
+        test = test.fillna(value='None')
         test = test.groupby(['bodyId_post','instance_post'], as_index=False)['weight','shared'].sum()
     if direction == 'in':
         test = fetch_simple_connections(None, IDs, min_weight=10)
         test['shared'] = 1
+        test = test.fillna(value='None')
         test = test.groupby(['bodyId_pre','instance_pre'], as_index=False)['weight','shared'].sum()
 
     test = test.sort_values(by=['weight'], ascending=False)
