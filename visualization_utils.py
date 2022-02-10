@@ -76,11 +76,11 @@ def jaccard_vis(conn_df, clock_df, clockIds, otherBodyIds = None):
         allIds = clockIds.append(pd.Series(otherBodyIds))
         otherNames = pd.Series(otherBodyIds)
 
-    jaccard_AB = np.zeros((len(clockIds), len(allIds)))
+    jaccard_AB = np.zeros((len(otherBodyIds), len(allIds)))
     i_ind = 0
     j_ind = 0
 
-    for i in clockIds:
+    for i in otherBodyIds:
         setA = set(conn_df.loc[conn_df['bodyId_pre'] == i, 'bodyId_post'])
 
         for j in allIds:
@@ -96,7 +96,7 @@ def jaccard_vis(conn_df, clock_df, clockIds, otherBodyIds = None):
     #mask = np.zeros_like(jaccard_AB)
     #mask[np.triu_indices_from(mask)] = True (add mask = mask to heatmap if this is used)
 
-    figure(figsize=(20, 16), dpi=80)
+    figure(figsize=(len(allIds), len(otherBodyIds)), dpi=80)
     sb.heatmap(jaccard_AB, vmin=0, vmax=1, annot=True, fmt='.2f', xticklabels=allNames,
                yticklabels=otherNames, cmap=sb.light_palette("seagreen", as_cmap=True),
                cbar_kws={'label': 'Jaccard index'})
