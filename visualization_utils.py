@@ -53,7 +53,7 @@ def supervenn_comps(conn_df, clock_df, group, direction, bodyIds = None, weighte
     fig.savefig('vectorized_' + group + '_targets.png')
     fig.savefig('vectorized_' + group + '_targets.svg', format='svg')
 
-def jaccard_vis(conn_df, clock_df, clockIds, otherBodyIds = None):
+def jaccard_vis(conn_df, clock_df, clockIds, direction, otherBodyIds = None):
     """
     Calculates jaccard values and visualizes as a heatmap
 
@@ -76,15 +76,22 @@ def jaccard_vis(conn_df, clock_df, clockIds, otherBodyIds = None):
         allIds = clockIds.append(pd.Series(otherBodyIds))
         otherNames = pd.Series(otherBodyIds)
 
+    if direction == "out":
+        clock_col = 'bodyId_pre'
+        partner_col = 'bodyId_post'
+    elif direction == "in":
+        clock_col = 'bodyId_post'
+        partner_col = 'bodyId_pre'
+
     jaccard_AB = np.zeros((len(otherBodyIds), len(allIds)))
     i_ind = 0
     j_ind = 0
 
     for i in otherBodyIds:
-        setA = set(conn_df.loc[conn_df['bodyId_pre'] == i, 'bodyId_post'])
+        setA = set(conn_df.loc[conn_df[clock_col] == i, partner_col])
 
         for j in allIds:
-            setB = set(conn_df.loc[conn_df['bodyId_pre'] == j, 'bodyId_post'])
+            setB = set(conn_df.loc[conn_df[clock_col] == j, partner_col])
             setAuB = setA.union(setB)
             setAiB = setA.intersection(setB)
             jaccard_AB[i_ind, j_ind] = len(setAiB) / len(setAuB)

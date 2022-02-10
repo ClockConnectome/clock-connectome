@@ -1,3 +1,5 @@
+import pandas as pd
+
 def clock_neuron_connections(clock_df, direction, min_weight=1):
     """
     Gets input/output connections of clock neurons as well as connections between clock neurons.
@@ -85,3 +87,146 @@ def synaptic_partner_numbers(conns_df, direction, intra_clock=False):
     partners_df = partners_df.rename(columns={"index":"bodyId", column_to_group_on:f"num_{clock}{pre_or_post}syn_partners"})
 
     return partners_df
+
+def ranked_lists(clock_df, conns_sort, pre_or_post):
+    """
+    Generates a dataframe with each 'type' of pre or postsynaptic neurons ranked by weight
+    
+    :param clock_df: clock dataframe
+    :param conns_sort: dataframe of connection information sorted from highest to lowest number of synaptic connections for each neuron
+    :param pre_or_post: string determining if it's looking at synaptic inputs (presynaptic) or targets (postsynaptic)
+    :return:
+    """
+
+    tables = []
+    #looking at one particular type at a time
+    types = clock_df['type'].unique()
+    for group in types:
+        #these are all the body Ids of that type
+        IDs = clock_df[clock_df['type']==group]['bodyId']
+        count = 1
+        #looking at one neuron at a time
+        for ID in IDs:
+            #takes only the rows where the presynaptic neuron is that neuron
+            if pre_or_post == 'post':
+                sub_conns = conns_sort[conns_sort["bodyId_pre"] == ID]
+            if pre_or_post == 'pre':
+                sub_conns = conns_sort[conns_sort["bodyId_post"] == ID]
+                sub_conns = sub_conns[['bodyId_pre', 'instance_pre', 'weight']]
+            sub_conns.reset_index(drop=True, inplace=True)
+            #adds on that information onto post_tables
+            tables.append(sub_conns)
+            count = count + 1
+
+    all_grouped = pd.concat(tables, axis = 1)
+    return all_grouped
+
+def intra_conns(clock_df, type_or_phase):
+    """
+    Retrieve body ids within each type/phase then retreieve only those rows where both in and out are of the same type. Concatenate row-wise
+    :param clock_df: clock dataframe
+    :param type_or_phase: (string) whether to call the function on each type or each phase.
+    :return:
+    """
+    from neuprint import fetch_adjacencies
+    
+    intra_conns = []
+    
+    if type_or_phase == 'type':
+        unique = clock_df.type.unique()
+        class_or_me = 'class'
+    if type_or_phase == 'phase':
+        unique = clock_df.phase.unique()
+        class_or_me = 'me'
+
+    for t in unique:
+        ids = clock_df[clock_df[type_or_phase] == t]['bodyId'].tolist()
+        neuron_df, conn_df = fetch_adjacencies(ids, ids)
+        out_df = conn_df.groupby(['bodyId_pre'], as_index=False)['weight'].sum() 
+        in_df = conn_df.groupby(['bodyId_post'], as_index=False)['weight'].sum()
+        conns = pd.merge(in_df, out_df.set_index('bodyId_pre'), left_on = 'bodyId_post', right_index = True)
+        conns = conns.rename(columns={"bodyId_post":"bodyId","weight_x":f"{class_or_me}_syn_in","weight_y":f"{class_or_me}_syn_out"})
+        intra_conns.append(conns)
+
+    conns = pd.concat(intra_conns)
+    if type_or_phase == 'phase':
+        me_ids = clock_df[clock_df['phase'] != '']['bodyId'].tolist()
+        conns = conns[conns['bodyId'].isin(me_ids)]
+    return conns
+
+def group_summary(conn_summary_df, clock_df, type_or_phase):
+    """
+    :param conn_summary_df: connection summary table
+    :param clock_df: clock dataframe
+    :type_or_phase: (string) whether to group by type or phase
+    :return:
+    """
+    #Merge type back on for easy grouping
+    conn_group_df = conn_summary_df.merge(clock_df[['bodyId', type_or_phase]])
+
+    #Use group_by to get summations
+    conn_group_df = conn_group_df.groupby([type_or_phase]).sum()
+    del conn_group_df['bodyId']
+
+    # Subtract out class synapses and reorder
+    class_synapses = conn_group_df['class_syn_in']
+    conn_group_df = conn_group_df.sub(class_synapses, axis = 0)
+    conn_group_df['class_syn_in'] = class_synapses
+
+    if type_or_phase == 'type':
+        groups = ['l-LNv', 's-LNv', '5th s-LNv', 'LNd', 'LPN', 'DN1a', 'DN1pA', 'DN1pB']
+        conn_group_df = conn_group_df.reindex(groups)
+
+    # reorder columns
+    conn_group_df = conn_group_df[['num_in_syns', 'num_presyn_partners', 'num_out_syns', 'num_postsyn_partners', 'class_syn_in', 'num_clock_in_syns', 'num_clock_out_syns']]
+    return conn_group_df
+
+def strong_shared_connections(IDs, direction, shared_num):
+    """
+    Gets strong shared targets (bodyID and total shared weight)
+    :param IDs: candidate IDs
+    :param direction: (string) specified connection direction to run:
+        'in' for inputs to clock neurons from anything else, 
+        'out' for outputs from clock neurons to anything else.
+    :param shared_num: (int) shared target number to look at
+    :return:
+    """
+    from neuprint import fetch_simple_connections
+
+    if direction == 'out':
+        test = fetch_simple_connections(IDs, None, min_weight=10)
+        test['shared'] = 1
+        test = test.fillna(value='None')
+        test = test.groupby(['bodyId_post','instance_post'], as_index=False)['weight','shared'].sum()
+    if direction == 'in':
+        test = fetch_simple_connections(None, IDs, min_weight=10)
+        test['shared'] = 1
+        test = test.fillna(value='None')
+        test = test.groupby(['bodyId_pre','instance_pre'], as_index=False)['weight','shared'].sum()
+
+    test = test.sort_values(by=['weight'], ascending=False)
+    test = test.loc[test['shared'] >= shared_num]
+
+    return test
+
+
+def get_input_output_conns(IDs, strength, direction):
+    """
+    Retrieves data for candidate neuron inputs or outputs and returns them sorted by weight
+    :param candidate_IDs: the bodyIds of the neurons of interest
+    :param strength: (int) minimum connection strength
+    :param direction: (string) specified connection direction to run:
+        'in' for inputs to clock neurons from anything else, 
+        'out' for outputs from clock neurons to anything else.
+    :return:
+    """
+    from neuprint import fetch_simple_connections
+    if direction == 'in':
+        candidate_conns = fetch_simple_connections(None, IDs, min_weight=strength)
+        candidate_conns = candidate_conns[['bodyId_post','instance_post','bodyId_pre','instance_pre','weight']]
+        candidate_conns = candidate_conns.sort_values(by=['bodyId_post','weight'], ascending = False)
+    if direction == 'out':
+        candidate_conns = fetch_simple_connections(IDs, None, min_weight=strength)
+        candidate_conns = candidate_conns[['bodyId_pre','instance_pre','bodyId_post','instance_post','weight']]
+        candidate_conns = candidate_conns.sort_values(by=['bodyId_pre','weight'], ascending = False)
+    return candidate_conns
