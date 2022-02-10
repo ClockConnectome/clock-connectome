@@ -100,6 +100,3 @@ def jaccard_vis(conn_df, clock_df, clockIds, otherBodyIds = None):
     sb.heatmap(jaccard_AB, vmin=0, vmax=1, annot=True, fmt='.2f', xticklabels=allNames,
                yticklabels=otherNames, cmap=sb.light_palette("seagreen", as_cmap=True),
                cbar_kws={'label': 'Jaccard index'})
-
-    #plt.title("Strong and medium outputs")
-    #plt.savefig("jac_LN_outputs.svg")
