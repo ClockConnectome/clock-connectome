@@ -120,7 +120,8 @@ def ranked_lists(clock_df, conns_sort, pre_or_post):
             tables.append(sub_conns)
             count = count + 1 #appears not to be needed
 
-    all_grouped = pd.concat(tables, axis = 1) # this concat does funky things to the data
+    all_grouped = pd.concat(tables, axis = 1) # this concat does funky things to the bodyIds
+    # please include clock neuron info along top of the DF before returning
     return all_grouped
 
 def intra_conns(clock_df, type_or_phase):
