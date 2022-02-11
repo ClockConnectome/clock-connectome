@@ -104,21 +104,23 @@ def ranked_lists(clock_df, conns_sort, pre_or_post):
     for group in types:
         #these are all the body Ids of that type
         IDs = clock_df[clock_df['type']==group]['bodyId']
-        count = 1
+        count = 1 #this appears to not be needed
         #looking at one neuron at a time
         for ID in IDs:
             #takes only the rows where the presynaptic neuron is that neuron
             if pre_or_post == 'post':
                 sub_conns = conns_sort[conns_sort["bodyId_pre"] == ID]
+                sub_conns = sub_conns[['bodyId_post', 'instance_post', 'weight']]
+            #takes only the rows where the postsynaptic neuron is that neuron
             if pre_or_post == 'pre':
                 sub_conns = conns_sort[conns_sort["bodyId_post"] == ID]
                 sub_conns = sub_conns[['bodyId_pre', 'instance_pre', 'weight']]
             sub_conns.reset_index(drop=True, inplace=True)
             #adds on that information onto post_tables
             tables.append(sub_conns)
-            count = count + 1
+            count = count + 1 #appears not to be needed
 
-    all_grouped = pd.concat(tables, axis = 1)
+    all_grouped = pd.concat(tables, axis = 1) # this concat does funky things to the data
     return all_grouped
 
 def intra_conns(clock_df, type_or_phase):
