@@ -5,15 +5,15 @@ import seaborn as sb
 from matplotlib.pyplot import figure
 import pandas as pd
 
-def supervenn_comps(conn_df, clock_df, group, direction, body_ids = None, weighted = False):
+def supervenn_comps(conn_df, clock_df, body_ids, direction, file_name, weighted = False):
     """
     Using the supervenn library, generates and saves out .png and .svg formats of the overlap similarity diagrams
 
     :param conn_df: Any connections dataframe that includes all relevant connections, weight cutoff already done
     :param clock_df: Clock dataframe
-    :param group: Name of clock group featured in figure OR some other identifying name for labels
-    :param direction: Out for connections of clock neurons to other neurons, in for connections of clock neurons from other neurons
     :param body_ids: BodyIds of neurons in figure
+    :param direction: Out for connections of clock neurons to other neurons, in for connections of clock neurons from other neurons
+    :param file_name: Name of neuron group to be used for file naming
     :param weighted: Whether generated figure visually represent weights of each connection
     :return:
     """
@@ -24,9 +24,6 @@ def supervenn_comps(conn_df, clock_df, group, direction, body_ids = None, weight
     elif direction == "in":
         clock_col = 'bodyId_post'
         partner_col = 'bodyId_pre'
-
-    if body_ids is None:
-        body_ids = clock_df.loc[clock_df['type'] == group, 'bodyId']
 
     sets = []
     if weighted:
@@ -48,10 +45,10 @@ def supervenn_comps(conn_df, clock_df, group, direction, body_ids = None, weight
     elif direction == "in":
         plt.xlabel('# of input neurons')
 
-    plt.ylabel(group + 's')
-    plt.title('overlap of ' + group + ' targets')
-    fig.savefig('vectorized_' + group + '_targets.png')
-    fig.savefig('vectorized_' + group + '_targets.svg', format='svg')
+    plt.ylabel(file_name + 's')
+    plt.title('overlap of ' + file_name + ' targets')
+    fig.savefig('vectorized_' + file_name + '_targets.png')
+    fig.savefig('vectorized_' + file_name + '_targets.svg', format='svg')
 
 def jaccard_vis(conn_df, clock_df, clock_ids, direction, other_body_ids = None):
     """
