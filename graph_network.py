@@ -1,12 +1,14 @@
 import matplotlib.pyplot as plt
 import networkx as nx
+from networkx.drawing.nx_pydot import write_dot
 
-def clock_type_network(conn_df):
+def clock_type_network(conn_df, dot_name = None):
     """
     Generates type collapsed version of intra clock connections with networkx
 
     :param conn_df: Any connections dataframe that includes all relevant connections, weight cutoff already done
-    :return:
+    :param dot_name: name of exported dot file
+    :return: (DiGraph) of connections between clock neurons
     """
     conn_df = conn_df.groupby(['instance_pre', 'instance_post'], as_index=False).sum()
     conn_df = conn_df.replace("_R", "", regex=True)[['instance_pre', 'instance_post', 'weight']]
@@ -32,9 +34,13 @@ def clock_type_network(conn_df):
     nx.draw_circular(G, with_labels=True, ax=ax, connectionstyle='arc3, rad = 0.1', width=list(weights), node_color=values, edge_color=e_colors)
     nx.draw_networkx_edge_labels(G, pos, label_pos=.8, edge_labels=nx.get_edge_attributes(G, 'weight'))
 
+    # Parallel edge weights overlap on networkx, export to dot file
+    if dot_name is not None:
+        write_dot(G, dot_name + '.svg')
+
     return G
 
-def neuron_graph(conn_df):
+def neuron_graph(conn_df, dot_name = None):
     conn_df = conn_df[['instance_pre', 'instance_post', 'weight']]
     G = nx.from_pandas_edgelist(conn_df, 'instance_pre', 'instance_post', edge_attr='weight', create_using=nx.DiGraph())
 
@@ -59,5 +65,6 @@ def neuron_graph(conn_df):
             edge_color=e_colors, font_color="whitesmoke", node_size=2000)
     nx.draw_networkx_edge_labels(G, pos, edge_labels=nx.get_edge_attributes(G, 'weight'))
 
-    #TODO: Parallel edge weights simply won't show on networkx, export to dot for graphviz
-    #from networkx.drawing.nx_pydot import write_dot
+    #Parallel edge weights overlap on networkx, export to dot file
+    if dot_name is not None:
+        write_dot(G, dot_name + '.svg')
