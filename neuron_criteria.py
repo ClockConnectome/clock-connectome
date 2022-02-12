@@ -3,7 +3,7 @@ def getClock(l_lnv=False):
     Manually generates table of the clock neurons with or without the l-lnvs
 
     :param l_lnv: default false. If set to True, includes information about l-lnv neurons.
-    :return:
+    :return: (Dataframe) of clock neuron information
     """
     import pandas as pd
 
@@ -30,7 +30,7 @@ def getClock(l_lnv=False):
 
     if l_lnv:
         l_lnv_dictionary = {
-           'bodyId': (1884625521,2065745704, 5813001741, 5813026773),
+           'bodyId': (1884625521, 2065745704, 5813001741, 5813026773),
            'type': tuple(('l-LNv', 'l-LNv', 'l-LNv', 'l-LNv')),
            'seqInstance': ['l-LNv_R_1', 'l-LNv_R_2', 'l-LNv_R_3', 'l-LNv_R_4'],
            'labels': ['lLNv1', 'lLNv2', 'lLNv3', 'lLNv4'],
@@ -46,14 +46,14 @@ def bodyIds_by_type(clock_df):
     """
     Uses data from clock_df to return a dictionary mapping neurons to lists of bodyIds.
     :param clock_df: clock information dataframe
-    :return:
+    :return: (Dictionary) of body ids by clock type
     """
     from collections import defaultdict
 
-    Ids_by_type = defaultdict()
+    ids_by_type = defaultdict()
     for t in clock_df.type.unique():
         one_type = clock_df[clock_df['type']==t]
-        bodyIds = one_type['bodyId']
-        bodyIds = bodyIds.values.tolist()
-        Ids_by_type[t] = bodyIds
-    return Ids_by_type
+        body_ids = one_type['bodyId']
+        body_ids = body_ids.values.tolist()
+        ids_by_type[t] = body_ids
+    return ids_by_type
