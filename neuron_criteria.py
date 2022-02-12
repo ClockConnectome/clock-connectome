@@ -3,7 +3,7 @@ def getClock(l_lnv=False):
     Manually generates table of the clock neurons with or without the l-lnvs
 
     :param l_lnv: default false. If set to True, includes information about l-lnv neurons.
-    :return:
+    :return: (Dataframe) of clock neuron information
     """
     import pandas as pd
 
@@ -46,14 +46,14 @@ def bodyIds_by_type(clock_df):
     """
     Uses data from clock_df to return a dictionary mapping neurons to lists of bodyIds.
     :param clock_df: clock information dataframe
-    :return:
+    :return: (Dictionary) of body ids by clock type
     """
     from collections import defaultdict
 
-    Ids_by_type = defaultdict()
+    ids_by_type = defaultdict()
     for t in clock_df.type.unique():
         one_type = clock_df[clock_df['type']==t]
-        bodyIds = one_type['bodyId']
-        bodyIds = bodyIds.values.tolist()
-        Ids_by_type[t] = bodyIds
-    return Ids_by_type
+        body_ids = one_type['bodyId']
+        body_ids = body_ids.values.tolist()
+        ids_by_type[t] = body_ids
+    return ids_by_type
