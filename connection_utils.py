@@ -182,10 +182,10 @@ def group_summary(conn_summary_df, clock_df, type_or_phase):
     conn_group_df = conn_group_df[['num_in_syns', 'num_presyn_partners', 'num_out_syns', 'num_postsyn_partners', 'class_syn_in', 'num_clock_in_syns', 'num_clock_out_syns']]
     return conn_group_df
 
-def strong_shared_connections(bodyIds, direction, shared_num):
+def strong_shared_connections(body_ids, direction, shared_num):
     """
-    Gets strong shared targets (bodyID and total shared weight)
-    :param bodyIds: candidate IDs
+    Gets strong shared targets (body id and total shared weight)
+    :param body_ids: candidate IDs
     :param direction: (string) specified connection direction to run:
         'in' for inputs to clock neurons from anything else, 
         'out' for outputs from clock neurons to anything else.
@@ -195,12 +195,12 @@ def strong_shared_connections(bodyIds, direction, shared_num):
     from neuprint import fetch_simple_connections
 
     if direction == 'out':
-        conns_df = fetch_simple_connections(bodyIds, None, min_weight=10)
+        conns_df = fetch_simple_connections(body_ids, None, min_weight=10)
         conns_df['shared'] = 1
         conns_df = conns_df.fillna(value='None')
         conns_df = conns_df.groupby(['bodyId_post', 'instance_post'], as_index=False)['weight', 'shared'].sum()
     if direction == 'in':
-        conns_df = fetch_simple_connections(None, bodyIds, min_weight=10)
+        conns_df = fetch_simple_connections(None, body_ids, min_weight=10)
         conns_df['shared'] = 1
         conns_df = conns_df.fillna(value='None')
         conns_df = conns_df.groupby(['bodyId_pre', 'instance_pre'], as_index=False)['weight', 'shared'].sum()
@@ -211,10 +211,10 @@ def strong_shared_connections(bodyIds, direction, shared_num):
     return shared_targets
 
 
-def get_input_output_conns(bodyIds, strength, direction):
+def get_input_output_conns(body_ids, strength, direction):
     """
     Retrieves data for candidate neuron inputs or outputs and returns them sorted by weight
-    :param bodyIds: the bodyIds of the neurons of interest
+    :param body_ids: the body IDs of the neurons of interest
     :param strength: (int) minimum connection strength
     :param direction: (string) specified connection direction to run:
         'in' for inputs to clock neurons from anything else, 
@@ -223,11 +223,11 @@ def get_input_output_conns(bodyIds, strength, direction):
     """
     from neuprint import fetch_simple_connections
     if direction == 'in':
-        candidate_conns = fetch_simple_connections(None, bodyIds, min_weight=strength)
+        candidate_conns = fetch_simple_connections(None, body_ids, min_weight=strength)
         candidate_conns = candidate_conns[['bodyId_post', 'instance_post', 'bodyId_pre', 'instance_pre', 'weight']]
         candidate_conns = candidate_conns.sort_values(by=['bodyId_post', 'weight'], ascending=False)
     if direction == 'out':
-        candidate_conns = fetch_simple_connections(bodyIds, None, min_weight=strength)
+        candidate_conns = fetch_simple_connections(body_ids, None, min_weight=strength)
         candidate_conns = candidate_conns[['bodyId_pre', 'instance_pre', 'bodyId_post', 'instance_post', 'weight']]
         candidate_conns = candidate_conns.sort_values(by=['bodyId_pre', 'weight'], ascending=False)
     return candidate_conns
