@@ -30,7 +30,7 @@ def getClock(l_lnv=False):
 
     if l_lnv:
         l_lnv_dictionary = {
-           'bodyId': (1884625521,2065745704, 5813001741, 5813026773),
+           'bodyId': (1884625521, 2065745704, 5813001741, 5813026773),
            'type': tuple(('l-LNv', 'l-LNv', 'l-LNv', 'l-LNv')),
            'seqInstance': ['l-LNv_R_1', 'l-LNv_R_2', 'l-LNv_R_3', 'l-LNv_R_4'],
            'labels': ['lLNv1', 'lLNv2', 'lLNv3', 'lLNv4'],
