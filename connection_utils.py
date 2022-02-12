@@ -88,38 +88,42 @@ def synaptic_partner_numbers(conns_df, direction, intra_clock=False):
 
     return partners_df
 
-def ranked_lists(clock_df, conns_sort, direction):
+def ranked_lists(conns_sort, clock_df, direction):
     """
     Generates a dataframe with each 'type' of pre or postsynaptic neurons ranked by weight
-    
+
     :param clock_df: clock dataframe
     :param conns_sort: dataframe of connection information sorted from highest to lowest number of synaptic connections for each neuron
     :param direction: string determining if it's looking at synaptic inputs (in) or targets (out)
     :return: (Dataframe) of ranked list of connections for each neuron in the clock network
     """
 
+    if direction == 'out':
+        clock_dir = 'pre'
+        partner_dir = 'post'
+    elif direction == 'in':
+        clock_dir = 'post'
+        partner_dir = 'pre'
+
     tables = []
-    #looking at one particular type at a time
     types = clock_df['type'].unique()
     for group in types:
-        #these are all the body Ids of that type
-        IDs = clock_df[clock_df['type']==group]['bodyId']
-        #looking at one neuron at a time
+        IDs = clock_df[clock_df['type'] == group]['bodyId']
         for ID in IDs:
-            #takes only the rows where the presynaptic neuron is that neuron
-            if direction == 'post':
-                sub_conns = conns_sort[conns_sort["bodyId_pre"] == ID]
-                sub_conns = sub_conns[['bodyId_post', 'instance_post', 'weight']]
-            #takes only the rows where the postsynaptic neuron is that neuron
-            if direction == 'pre':
-                sub_conns = conns_sort[conns_sort["bodyId_post"] == ID]
-                sub_conns = sub_conns[['bodyId_pre', 'instance_pre', 'weight']]
+            sub_conns = conns_sort[conns_sort['bodyId_' + clock_dir] == ID]
+            name = clock_df[clock_df["bodyId"] == ID]['labels'].to_string(index=False)
+            sub_conns = sub_conns[['bodyId_' + partner_dir, 'instance_' + partner_dir, 'weight']]
+            sub_conns = sub_conns.rename(
+                columns={"bodyId_" + partner_dir: name + ".bodyId_" + partner_dir,
+                         "instance_" + partner_dir: name + ".instance_" + partner_dir,
+                         "weight": name + ".weight"})
             sub_conns.reset_index(drop=True, inplace=True)
-            #adds on that information onto post_tables
             tables.append(sub_conns)
 
-    all_grouped = pd.concat(tables, axis = 1) # this concat does funky things to the bodyIds
-    # please include clock neuron info along top of the DF before returning
+    all_grouped = pd.concat(tables, axis=1)
+    all_grouped.columns = pd.MultiIndex.from_tuples([(c[0], c[1]) for c in (x.split('.') for x in all_grouped.columns)])
+    pd.set_option('display.float_format', lambda x: '%.f' % x)
+
     return all_grouped
 
 def intra_conns(clock_df, type_or_phase):
