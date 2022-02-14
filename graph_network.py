@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 from networkx.drawing.nx_pydot import write_dot
 
-def clock_type_network(conn_df, dot_name = None):
+def clock_type_network(conn_df, clock_df, dot_name = None, separate_E_cells = True):
     """
     Generates type collapsed version of intra clock connections with networkx
 
@@ -10,20 +10,34 @@ def clock_type_network(conn_df, dot_name = None):
     :param dot_name: name of exported dot file
     :return: (DiGraph) of connections between clock neurons
     """
-    conn_df = conn_df.groupby(['instance_pre', 'instance_post'], as_index=False).sum()
-    conn_df = conn_df.replace("_R", "", regex=True)[['instance_pre', 'instance_post', 'weight']]
 
-    G = nx.from_pandas_edgelist(conn_df, 'instance_pre', 'instance_post', edge_attr='weight', create_using=nx.DiGraph())
+    if separate_E_cells:
+        import numpy as np
+        from neuprint import fetch_adjacencies, merge_neuron_properties
+        clock_IDs = clock_df['bodyId'].tolist()
+        neuron_df, conn_df = fetch_adjacencies(clock_IDs, clock_IDs, min_total_weight=3)
+        neuron_df = neuron_df.merge(clock_df, on=["bodyId"])[['bodyId', 'type_x', 'instance', 'subphase']]
+        neuron_df['type_x'] = np.where(neuron_df['subphase'] == '', neuron_df['type_x'], neuron_df['subphase'])
+        neuron_df = neuron_df.rename({'type_x': 'type'}, axis='columns')
+        conn_df = merge_neuron_properties(neuron_df, conn_df)
+        conn_df = conn_df.groupby(['type_pre', 'type_post'], as_index=False).sum()
+        G = nx.from_pandas_edgelist(conn_df, 'type_pre', 'type_post', edge_attr='weight',
+                                    create_using=nx.DiGraph())
+    else:
+        conn_df = conn_df.groupby(['instance_pre', 'instance_post'], as_index=False).sum()
+        conn_df = conn_df.replace("_R", "", regex=True)[['instance_pre', 'instance_post', 'weight']]
+        G = nx.from_pandas_edgelist(conn_df, 'instance_pre', 'instance_post', edge_attr='weight',
+                                    create_using=nx.DiGraph())
     
     import math
 
     weights = list(nx.get_edge_attributes(G, 'weight').values())
     weights = [math.log(w) for w in weights]
-    val_map = {'s-LNv': '#9D3434',
+    val_map = {'s-LNv': '#9D3434', 'M': '#9D3434',
                'DN1a': '#C597D4',
                'DN1pA': '#3963A1',
                'DN1pB': '#3963A1',
-               'LNd': '#E1B464',
+               'LNd': '#E1B464', 'E1': '#E1B464', 'E2': '#E1B464', 'E3': '#E1B464',
                'LPN': '#4A7A0F',
                '5th s-LNv': '#D86E6E'}
     values = [val_map.get(node) for node in G.nodes()]
