@@ -25,7 +25,7 @@ def getClock(l_lnv=False):
                  'evening', 'evening', '', '', '', '', '', '', '', '', '', '', '', '', ''],
        'subphase': ['M', 'M', 'M', 'M', 'E1', 'E1', 'E2', 'E2', 'E3', 
                  'E3', 'E3', '', '', '', '', '', '', '', '', '', '', '', '', '']}
-    #additional field w clock labels stylized w/o R or without underscore
+
     clock_df = pd.DataFrame.from_dict(clock_dictionary)
 
     if l_lnv:

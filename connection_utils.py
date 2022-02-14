@@ -88,12 +88,12 @@ def synaptic_partner_numbers(conns_df, direction, intra_clock=False):
 
     return partners_df
 
-def ranked_lists(conns_sort, clock_df, direction):
+def ranked_lists(conns_df, clock_df, direction):
     """
     Generates a dataframe with each 'type' of pre or postsynaptic neurons ranked by weight
 
+    :param conns_df: dataframe of connection information sorted from highest to lowest number of synaptic connections for each neuron
     :param clock_df: clock dataframe
-    :param conns_sort: dataframe of connection information sorted from highest to lowest number of synaptic connections for each neuron
     :param direction: string determining if it's looking at synaptic inputs (in) or targets (out)
     :return: (Dataframe) of ranked list of connections for each neuron in the clock network
     """
@@ -126,9 +126,10 @@ def ranked_lists(conns_sort, clock_df, direction):
 
     return all_grouped
 
-def intra_conns(clock_df, type_or_phase):
+def intra_conns(conn_df, clock_df, type_or_phase):
     """
     Retrieve body ids within each type/phase then retrieve only those rows where both in and out are of the same type.
+    :param conn_df: connection dataframe for intra-clock neuron connections
     :param clock_df: clock dataframe
     :param type_or_phase: (string) whether to call the function on each type or each phase.
     :return: (Dataframe) of the intra-clock connections
@@ -145,8 +146,6 @@ def intra_conns(clock_df, type_or_phase):
         class_or_me = 'me'
 
     for t in unique:
-        ids = clock_df[clock_df[type_or_phase] == t]['bodyId'].tolist()
-        neuron_df, conn_df = fetch_adjacencies(ids, ids)
         out_df = conn_df.groupby(['bodyId_pre'], as_index=False)['weight'].sum() 
         in_df = conn_df.groupby(['bodyId_post'], as_index=False)['weight'].sum()
         conns = pd.merge(in_df, out_df.set_index('bodyId_pre'), left_on = 'bodyId_post', right_index = True)
@@ -215,14 +214,14 @@ def strong_shared_connections(body_ids, direction, shared_num):
     return shared_targets
 
 
-def get_input_output_conns(body_ids, strength, direction):
+def get_input_output_conns(body_ids, direction, strength):
     """
     Retrieves data for candidate neuron inputs or outputs and returns them sorted by weight
     :param body_ids: the body IDs of the neurons of interest
-    :param strength: (int) minimum connection strength
     :param direction: (string) specified connection direction to run:
         'in' for inputs to clock neurons from anything else, 
         'out' for outputs from clock neurons to anything else.
+    :param strength: (int) minimum connection strength
     :return: (Dataframe) of connections for candidate neurons
     """
     from neuprint import fetch_simple_connections
