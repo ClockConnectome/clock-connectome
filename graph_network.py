@@ -38,7 +38,7 @@ def clock_type_network(conn_df, dot_name = None):
     if dot_name is not None:
         write_dot(G, dot_name + '.svg')
 
-    return G
+    return G, conn_df
 
 def neuron_graph(conn_df, dot_name = None):
     conn_df = conn_df[['instance_pre', 'instance_post', 'weight']]

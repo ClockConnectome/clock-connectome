@@ -210,7 +210,7 @@ def strong_shared_connections(body_ids, direction, shared_num):
         conns_df = conns_df.groupby(['bodyId_pre', 'instance_pre'], as_index=False)['weight', 'shared'].sum()
 
     conns_df = conns_df.sort_values(by=['weight'], ascending=False)
-    shared_targets = conns_df.loc[test['shared'] >= shared_num]
+    shared_targets = conns_df.loc[conns_df['shared'] >= shared_num]
 
     return shared_targets
 
