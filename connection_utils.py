@@ -214,7 +214,7 @@ def strong_shared_connections(body_ids, direction, shared_num):
     return shared_targets
 
 
-def get_input_output_conns(body_ids, direction, strength):
+def get_input_output_conns(body_ids, direction, min_strength = 1):
     """
     Retrieves data for candidate neuron inputs or outputs and returns them sorted by weight
     :param body_ids: the body IDs of the neurons of interest
@@ -226,11 +226,11 @@ def get_input_output_conns(body_ids, direction, strength):
     """
     from neuprint import fetch_simple_connections
     if direction == 'in':
-        candidate_conns = fetch_simple_connections(None, body_ids, min_weight=strength)
+        candidate_conns = fetch_simple_connections(None, body_ids, min_weight=min_strength)
         candidate_conns = candidate_conns[['bodyId_post', 'instance_post', 'bodyId_pre', 'instance_pre', 'weight']]
         candidate_conns = candidate_conns.sort_values(by=['bodyId_post', 'weight'], ascending=False)
     if direction == 'out':
-        candidate_conns = fetch_simple_connections(body_ids, None, min_weight=strength)
+        candidate_conns = fetch_simple_connections(body_ids, None, min_weight=min_strength)
         candidate_conns = candidate_conns[['bodyId_pre', 'instance_pre', 'bodyId_post', 'instance_post', 'weight']]
         candidate_conns = candidate_conns.sort_values(by=['bodyId_pre', 'weight'], ascending=False)
     return candidate_conns
