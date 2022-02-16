@@ -128,7 +128,7 @@ def ranked_lists(conns_df, clock_df, direction):
 
     return all_grouped
 
-def intra_conns(conn_df, clock_df, type_or_phase):
+def intra_conns(clock_df, type_or_phase):
     """
     Retrieve body ids within each type/phase then retrieve only those rows where both in and out are of the same type.
     :param conn_df: connection dataframe for intra-clock neuron connections
@@ -148,6 +148,8 @@ def intra_conns(conn_df, clock_df, type_or_phase):
         class_or_me = 'me'
 
     for t in unique:
+        ids = clock_df[clock_df[type_or_phase] == t]['bodyId'].tolist()
+        neuron_df, conn_df = fetch_adjacencies(ids, ids)
         out_df = conn_df.groupby(['bodyId_pre'], as_index=False)['weight'].sum() 
         in_df = conn_df.groupby(['bodyId_post'], as_index=False)['weight'].sum()
         conns = pd.merge(in_df, out_df.set_index('bodyId_pre'), left_on = 'bodyId_post', right_index = True)
