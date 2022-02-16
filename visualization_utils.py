@@ -12,7 +12,9 @@ def supervenn_comps(conn_df, clock_df, body_ids, direction, file_name, weighted 
     :param conn_df: Any connections dataframe that includes all relevant connections, weight cutoff already done
     :param clock_df: Clock dataframe
     :param body_ids: BodyIds of neurons in figure
-    :param direction: Out for connections of clock neurons to other neurons, in for connections of clock neurons from other neurons
+    :param direction: (string) specified connection direction to run:
+        'in' for inputs to clock neurons from anything else,
+        'out' for outputs from clock neurons to anything else.
     :param file_name: Name of neuron group to be used for file naming
     :param weighted: Whether generated figure visually represent weights of each connection
     :return:
@@ -26,6 +28,8 @@ def supervenn_comps(conn_df, clock_df, body_ids, direction, file_name, weighted 
         partner_col = 'bodyId_pre'
 
     sets = []
+
+    # Generate sets of inputs/targets for each neuron, adding indexes to create multiples if weighted = True
     if weighted:
         for id in body_ids:
             df = conn_df.loc[conn_df[clock_col] == id, [partner_col, 'weight']]
@@ -36,6 +40,7 @@ def supervenn_comps(conn_df, clock_df, body_ids, direction, file_name, weighted 
         for s in body_ids:
             sets.append(set(conn_df.loc[conn_df[clock_col] == s, partner_col]))
 
+    # Generate figure and label
     fig, ax = plt.subplots(figsize=(10, 8))
     labels = clock_df.loc[clock_df['bodyId'].isin(body_ids), 'labels'].reset_index()['labels']
     supervenn(sets, labels, side_plots='right', chunks_ordering='minimize gaps')
@@ -57,14 +62,19 @@ def jaccard_vis(conn_df, clock_df, clock_ids, direction, other_body_ids = None):
     :param conn_df: Any connections dataframe that includes all relevant connections, weight cutoff already done
     :param clock_df: Clock dataframe
     :param clock_ids: The body ids of clock neurons in this jaccard visualization
-    :param otherBodyIds: Any other body ids, clock not included
+    :param direction: (string) specified connection direction to run:
+        'in' for inputs to clock neurons from anything else,
+        'out' for outputs from clock neurons to anything else.
+    :param other_body_ids: Any other body ids, clock not included
     :return: (Matrix) of jaccard similarity values
     """
 
+    # Retrieve descriptive names
     clock_ids = pd.Series(clock_ids)
     clock_names = clock_df.loc[clock_df['bodyId'].isin(clock_ids)]['labels']
     all_names = clock_names.append(other_body_ids)
 
+    # If no second set of body ids is provide, assume the first set of ids is compared to itself
     if other_body_ids is None:
         all_ids = clock_ids
         other_body_ids = all_ids
@@ -73,6 +83,7 @@ def jaccard_vis(conn_df, clock_df, clock_ids, direction, other_body_ids = None):
         all_ids = clock_ids.append(pd.Series(other_body_ids))
         other_names = pd.Series(other_body_ids)
 
+    # Supply correct columns for data retrieval
     if direction == "out":
         clock_col = 'bodyId_pre'
         partner_col = 'bodyId_post'
@@ -80,6 +91,7 @@ def jaccard_vis(conn_df, clock_df, clock_ids, direction, other_body_ids = None):
         clock_col = 'bodyId_post'
         partner_col = 'bodyId_pre'
 
+    # Create and fill in matrix of jaccard values between ids
     jaccard_AB = np.zeros((len(other_body_ids), len(all_ids)))
     i_ind = 0
     j_ind = 0
@@ -97,6 +109,7 @@ def jaccard_vis(conn_df, clock_df, clock_ids, direction, other_body_ids = None):
         i_ind += 1
         j_ind = 0
 
+    # Jaccard figure
     figure(figsize=(len(all_ids), len(other_body_ids)), dpi=80)
     sb.heatmap(jaccard_AB, vmin=0, vmax=1, annot=True, fmt='.2f', xticklabels=all_names,
                yticklabels=other_names, cmap=sb.light_palette("seagreen", as_cmap=True),

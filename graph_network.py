@@ -7,10 +7,15 @@ def clock_type_network(conn_df, clock_df, dot_name = None, separate_E_cells = Tr
     Generates type collapsed version of intra clock connections with networkx
 
     :param conn_df: Any connections dataframe that includes all relevant connections, weight cutoff already done
+    :param clock_df: Clock dataframe
     :param dot_name: name of exported dot file
+    :param separate_E_cells: Should LNds be grouped
+        True graph separates evening cells into subgroups E1, E2, and E3
+        False graph groups LNds together and 5th s-LNv is its own node
     :return: (DiGraph) of connections between clock neurons
     """
 
+    # separate_E_cells re-fetches adjacencies so clock_df information can be merged on instead of neuprint default
     if separate_E_cells:
         import numpy as np
         from neuprint import fetch_adjacencies, merge_neuron_properties
@@ -31,6 +36,7 @@ def clock_type_network(conn_df, clock_df, dot_name = None, separate_E_cells = Tr
     
     import math
 
+    # Generates weighting and colors for final nodes and edges
     weights = list(nx.get_edge_attributes(G, 'weight').values())
     weights = [math.log(w) for w in weights]
     val_map = {'s-LNv': '#9D3434', 'M': '#9D3434',
@@ -62,7 +68,7 @@ def neuron_graph(conn_df, dot_name = None):
     weights = list(nx.get_edge_attributes(G, 'weight').values())
     weights = [math.log(w) for w in weights]
 
-    #TODO: consider a different workaround for coloring 5th s-LNv
+    # Generates weighting and colors for final nodes and edges
     val_map = {'sLNv': '#9D3434',
                'DN1a': '#C597D4',
                'DN1pA': '#3963A1',
@@ -79,6 +85,6 @@ def neuron_graph(conn_df, dot_name = None):
             edge_color=e_colors, font_color="whitesmoke", node_size=2000)
     nx.draw_networkx_edge_labels(G, pos, edge_labels=nx.get_edge_attributes(G, 'weight'))
 
-    #Parallel edge weights overlap on networkx, export to dot file
+    # Parallel edge weights overlap on networkx, export to dot file
     if dot_name is not None:
         write_dot(G, dot_name + '.svg')

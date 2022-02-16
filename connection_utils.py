@@ -110,7 +110,8 @@ def ranked_lists(conns_df, clock_df, direction):
     for group in types:
         IDs = clock_df[clock_df['type'] == group]['bodyId']
         for ID in IDs:
-            sub_conns = conns_sort[conns_sort['bodyId_' + clock_dir] == ID]
+            sub_conns = conns_df[conns_df['bodyId_' + clock_dir] == ID]
+            # To retain meta information on the clock neuron, temporarily concat on name to every column
             name = clock_df[clock_df["bodyId"] == ID]['labels'].to_string(index=False)
             sub_conns = sub_conns[['bodyId_' + partner_dir, 'instance_' + partner_dir, 'weight']]
             sub_conns = sub_conns.rename(
@@ -120,6 +121,7 @@ def ranked_lists(conns_df, clock_df, direction):
             sub_conns.reset_index(drop=True, inplace=True)
             tables.append(sub_conns)
 
+    # Concatenate all neuron connectivity tables side by side then set display with nested neuron meta
     all_grouped = pd.concat(tables, axis=1)
     all_grouped.columns = pd.MultiIndex.from_tuples([(c[0], c[1]) for c in (x.split('.') for x in all_grouped.columns)])
     pd.set_option('display.float_format', lambda x: '%.f' % x)
