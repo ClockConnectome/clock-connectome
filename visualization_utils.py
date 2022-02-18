@@ -110,9 +110,9 @@ def jaccard_vis(conn_df, clock_df, clock_ids, direction, other_body_ids = None):
         j_ind = 0
 
     # Jaccard figure
-    figure(figsize=(len(all_ids), len(other_body_ids)), dpi=80)
+    fig = figure(figsize=(len(all_ids), len(other_body_ids)), dpi=80)
     sb.heatmap(jaccard_AB, vmin=0, vmax=1, annot=True, fmt='.2f', xticklabels=all_names,
                yticklabels=other_names, cmap=sb.light_palette("seagreen", as_cmap=True),
                cbar_kws={'label': 'Jaccard index'})
 
-    return(jaccard_AB)
+    return(jaccard_AB, fig)
