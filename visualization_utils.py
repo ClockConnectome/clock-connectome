@@ -5,7 +5,7 @@ import seaborn as sb
 from matplotlib.pyplot import figure
 import pandas as pd
 
-def supervenn_comps(conn_df, clock_df, body_ids, direction, file_name, weighted = False):
+def supervenn_comps(conn_df, clock_df, body_ids, direction, file_name, weighted = False, annot_width = 1):
     """
     Using the supervenn library, generates and saves out .png and .svg formats of the overlap similarity diagrams
 
@@ -43,17 +43,18 @@ def supervenn_comps(conn_df, clock_df, body_ids, direction, file_name, weighted 
     # Generate figure and label
     fig, ax = plt.subplots(figsize=(10, 8))
     labels = clock_df.loc[clock_df['bodyId'].isin(body_ids), 'labels'].reset_index()['labels']
-    supervenn(sets, labels, side_plots='right', chunks_ordering='minimize gaps')
+    supervenn(sets, labels, side_plots='right', chunks_ordering='minimize gaps', min_width_for_annotation = annot_width)
 
     if direction == "out":
-        plt.xlabel('# of target neurons')
+        d = 'target'
     elif direction == "in":
-        plt.xlabel('# of input neurons')
+        d = 'input'
 
+    plt.xlabel('# of ' + d + ' neurons')
     plt.ylabel(file_name + 's')
-    plt.title('overlap of ' + file_name + ' targets')
-    fig.savefig('vectorized_' + file_name + '_targets.png')
-    fig.savefig('vectorized_' + file_name + '_targets.svg', format='svg')
+    plt.title('overlap of ' + file_name + ' ' + d + 's')
+    fig.savefig('vectorized_' + file_name + '_' + d + 's.png')
+    fig.savefig('vectorized_' + file_name + '_' + d + 's.svg', format='svg')
 
 def jaccard_vis(conn_df, clock_df, clock_ids, direction, other_body_ids = None):
     """
