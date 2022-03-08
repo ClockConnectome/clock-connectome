@@ -115,6 +115,8 @@ def jaccard_vis(conn_df, clock_df, clock_ids, direction, other_body_ids = None, 
     if diag_mask==True:
         mask = np.zeros_like(jaccard_AB)
         mask[np.triu_indices_from(mask)] = True
+        mask[np.diag_indices_from(mask)] = False
+        mask[jaccard_AB==0] = True
         sb.heatmap(jaccard_AB, mask=mask, vmin=0, vmax=1, annot=True, fmt='.2f', xticklabels=all_names,
                yticklabels=other_names, cmap=sb.light_palette("seagreen", as_cmap=True),
                cbar_kws={'label': 'Jaccard index'})
