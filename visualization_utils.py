@@ -56,7 +56,7 @@ def supervenn_comps(conn_df, clock_df, body_ids, direction, file_name, weighted 
     fig.savefig('vectorized_' + file_name + '_' + d + 's.png')
     fig.savefig('vectorized_' + file_name + '_' + d + 's.svg', format='svg')
 
-def jaccard_vis(conn_df, clock_df, clock_ids, direction, other_body_ids = None):
+def jaccard_vis(conn_df, clock_df, clock_ids, direction, other_body_ids = None, diag_mask=False):
     """
     Calculates jaccard values and visualizes as a heatmap
 
@@ -110,10 +110,17 @@ def jaccard_vis(conn_df, clock_df, clock_ids, direction, other_body_ids = None):
         i_ind += 1
         j_ind = 0
 
-    # Jaccard figure
+    # Jaccard figure        
     fig = figure(figsize=(len(all_ids), len(other_body_ids)), dpi=80)
-    sb.heatmap(jaccard_AB, vmin=0, vmax=1, annot=True, fmt='.2f', xticklabels=all_names,
+    if diag_mask==True:
+        mask = np.zeros_like(jaccard_AB)
+        mask[np.triu_indices_from(mask)] = True
+        sb.heatmap(jaccard_AB, mask=mask, vmin=0, vmax=1, annot=True, fmt='.2f', xticklabels=all_names,
                yticklabels=other_names, cmap=sb.light_palette("seagreen", as_cmap=True),
                cbar_kws={'label': 'Jaccard index'})
-
+    else:
+        sb.heatmap(jaccard_AB, vmin=0, vmax=1, annot=True, fmt='.2f', xticklabels=all_names,
+               yticklabels=other_names, cmap=sb.light_palette("seagreen", as_cmap=True),
+               cbar_kws={'label': 'Jaccard index'})
+            
     return(jaccard_AB, fig)
