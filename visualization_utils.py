@@ -126,3 +126,63 @@ def jaccard_vis(conn_df, clock_df, clock_ids, direction, other_body_ids = None, 
                cbar_kws={'label': 'Jaccard index'})
             
     return(jaccard_AB, fig)
+
+
+def jaccard_simple(x_ids, y_ids, direction, diag_mask=False):
+    """
+    Calculates jaccard values and visualizes as a heatmap
+
+    :param x_ids: The body ids of neurons to be shown on the x axis in this jaccard visualization
+    :param y_ids: The body ids of neurons to be shown on the y axis in this jaccard visualization
+    :param direction: (string) specified connection direction to run:
+        'in' for inputs to neurons from anything else,
+        'out' for outputs from neurons to anything else.
+    :return: (Matrix) of jaccard similarity values
+    """
+
+    all_ids = pd.concat([x_ids, y_ids])
+    
+    # Supply correct columns for data retrieval and fetch connections df
+    if direction == "out":
+        clock_col = 'bodyId_pre'
+        partner_col = 'bodyId_post'
+        conn_df = fetch_simple_connections(all_ids, None, min_weight=3)
+    elif direction == "in":
+        clock_col = 'bodyId_post'
+        partner_col = 'bodyId_pre'
+        conn_df = fetch_simple_connections(None, all_ids, min_weight=3)
+        
+    # Create and fill in matrix of jaccard values between ids
+    jaccard_AB = np.zeros((len(y_ids), len(x_ids)))
+    i_ind = 0
+    j_ind = 0
+
+    for i in y_ids:
+        setA = set(conn_df.loc[conn_df[clock_col] == i, partner_col])
+
+        for j in x_ids:
+            setB = set(conn_df.loc[conn_df[clock_col] == j, partner_col])
+            setAuB = setA.union(setB)
+            setAiB = setA.intersection(setB)
+            jaccard_AB[i_ind, j_ind] = len(setAiB) / len(setAuB)
+            j_ind += 1
+
+        i_ind += 1
+        j_ind = 0
+
+    # Jaccard figure        
+    fig = figure(figsize=(len(x_ids), len(y_ids)), dpi=80)
+    if diag_mask==True:
+        mask = np.zeros_like(jaccard_AB)
+        mask[np.triu_indices_from(mask)] = True
+        mask[np.diag_indices_from(mask)] = False
+        mask[jaccard_AB==0] = True
+        sb.heatmap(jaccard_AB, mask=mask, vmin=0, vmax=1, annot=True, fmt='.2f', xticklabels=x_ids,
+               yticklabels=y_ids, cmap=sb.light_palette("seagreen", as_cmap=True),
+               cbar_kws={'label': 'Jaccard index'})
+    else:
+        sb.heatmap(jaccard_AB, vmin=0, vmax=1, annot=True, fmt='.2f', xticklabels=x_ids,
+               yticklabels=y_ids, cmap=sb.light_palette("seagreen", as_cmap=True),
+               cbar_kws={'label': 'Jaccard index'})
+            
+    return(jaccard_AB, fig)
