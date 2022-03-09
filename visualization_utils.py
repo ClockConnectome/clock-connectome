@@ -139,8 +139,11 @@ def jaccard_simple(x_ids, y_ids, direction, diag_mask=False):
         'out' for outputs from neurons to anything else.
     :return: (Matrix) of jaccard similarity values
     """
+    
+    from neuprint import fetch_simple_connections
 
     all_ids = pd.concat([x_ids, y_ids])
+    # would be nice to get only unique all_ids
     
     # Supply correct columns for data retrieval and fetch connections df
     if direction == "out":
@@ -186,3 +189,13 @@ def jaccard_simple(x_ids, y_ids, direction, diag_mask=False):
                cbar_kws={'label': 'Jaccard index'})
             
     return(jaccard_AB, fig)
+
+# clustering algorithm to put into jaccard_simple
+# make a copy of jaccard_AB matrix and set diagonal to zeros = test_matrix
+# make a copy of candidate_IDs = test_IDs
+# make ordered_IDs empty list
+# first bodyId in test_IDs will be first neuron on x and y axes. remove from test_IDs and put into ordered_IDs
+# take first row of test_matrix and find max value
+# use index of max value to get corresponding bodyId from candidate_IDs. remove from test_IDs and append to ordered_IDs.
+# this bodyId will be the second neuron on x and y axes. move this row of test_matrix up to second row.
+# find max value of 2nd row excluding max value from 1st column. repeat.
