@@ -17,6 +17,7 @@ def supervenn_comps(conn_df, clock_df, body_ids, direction, file_name, weighted 
         'out' for outputs from clock neurons to anything else.
     :param file_name: Name of neuron group to be used for file naming
     :param weighted: Whether generated figure visually represent weights of each connection
+    :param annot_width: Minimum weight for an annotation to be written
     :return:
     """
 
@@ -53,8 +54,8 @@ def supervenn_comps(conn_df, clock_df, body_ids, direction, file_name, weighted 
     plt.xlabel('# of ' + d + ' neurons')
     plt.ylabel(file_name + 's')
     plt.title('overlap of ' + file_name + ' ' + d + 's')
-    fig.savefig('vectorized_' + file_name + '_' + d + 's.png')
-    fig.savefig('vectorized_' + file_name + '_' + d + 's.svg', format='svg')
+
+    return(fig)
 
 def jaccard_vis(conn_df, clock_df, clock_ids, direction, other_body_ids = None, diag_mask=False):
     """
